@@ -8,20 +8,32 @@ alphabet [a-zA-Z]
 number  [0-9]
 numbers [0-9]+
 
+LB (
+RB )
+LMB [
+RMB ]
+LETH <
+MOTH >
+COMMA ,
+SEMICOLON ;
+PLUS +
+MINUS -
+
 
 %%
 
+{LB}   {return LB;}
+{RB}   {return RB;}
+{LMB}   {return LMB;}
+{RMB}   {return RMB;}
+{LETH}   {return LETH;}
+{MOTH}   {return MOTH;}
+{COMMA}   {return COMMA;}
+{SEMICOLON}   {return SEMICOLON;}
+{PLUS}   {return PLUS;}
+{MINUS}   {return MINUS;}
 
-"("     return LB;
-")"     return RB;
-"["     return LMB;
-"]"     return RMB;
-"<"     return LETH;
-">"     return METH;
-","     return COMMA;
-";"     return SEMICOLON;
-"+"     return PLUS;
-"-"     return MINUS;
+
 
 ({alphabet}|_)({alphabet}|{number}|_)* {
 	char * temp = strdup("%");
