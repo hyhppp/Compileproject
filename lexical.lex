@@ -14,10 +14,23 @@ LMB [
 RMB ]
 LETH <
 MOTH >
+LETHE <=
+MOTHE >=
+ISE ==
+NOTE !=
 COMMA ,
 SEMICOLON ;
 PLUS +
 MINUS -
+
+
+
+FOR for
+WHILE while
+BREAK break
+IF if
+ELSE else
+RETURN return
 
 
 %%
@@ -28,10 +41,21 @@ MINUS -
 {RMB}   {return RMB;}
 {LETH}   {return LETH;}
 {MOTH}   {return MOTH;}
+{LETHE}   {return LETHE;}
+{MOTHE}   {return MOTHE;}
+{ISE}   {return ISE;}
+{NOTE}   {return NOTE;}
 {COMMA}   {return COMMA;}
 {SEMICOLON}   {return SEMICOLON;}
 {PLUS}   {return PLUS;}
 {MINUS}   {return MINUS;}
+
+{FOR}   {return FOR;}
+{WHILE}   {return WHILE;}
+{BREAK}   {return BREAK;}
+{IF}   {return IF;}
+{ELSE}   {return ELSE;}
+{RETURN}   {return RETURN;}
 
 
 
