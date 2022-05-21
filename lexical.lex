@@ -49,6 +49,12 @@ STRING \"(\\.)*\"
 BOOL "true"|"false"
 TYPE "int"|"double"|"char"|"string"|"boolean"
 
+CR \r
+LF \n
+TAB " "
+
+COMMENT \/\/[^\n]*
+
 
 %%
 
@@ -92,6 +98,15 @@ TYPE "int"|"double"|"char"|"string"|"boolean"
 {BOOL}   {return BOOL;}
 {TYPE}   {return TYPE;}
 
+{CR}   {return CR;}
+{LF}   {return LF;}
+{TAB}   {return TAB;}
+
+{COMMENT}   {}
 
 
 %%
+
+int yywrap(void) {
+    return 1;
+}
