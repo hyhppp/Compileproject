@@ -49,11 +49,10 @@
         .projection(d => [d.y, d.x])
     //4 请求数据
     d3.json("ast_tree.json", function (error, root) {
-        //1 获取节点数组和连线数组
         var nodes = tree.nodes(root)//获取所有节点信息
         var links = tree.links(nodes)//获取节点的连线信息集合
 
-        //2 生成连线
+
         var link = svg.selectAll('.link')
             .data(links)
             .enter()
@@ -61,7 +60,6 @@
             .attr('class', 'link')
             .attr('d', diagonal)
 
-        // 3 生成节点
         var node = svg.selectAll('.node')
             .data(nodes)
             .enter()
@@ -71,12 +69,6 @@
                 return "translate(" + d.y + "," + d.x + ")";
             });
 
-        // 4 给节点添加圆圈设置半径 
-        node.append('circle')
-            .attr('r', 4.5);
-
-
-        // 5 给节点添加文本 设置文本样式 位置
         node.append("text")
             .attr("dx", function (d) { return 0; })//定义文本显示x轴偏移量
             .attr("dy", 10)//定义文本显示y轴偏移量
