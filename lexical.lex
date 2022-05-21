@@ -12,18 +12,25 @@ LB (
 RB )
 LMB [
 RMB ]
+LBB {
+RBB }
 LETH <
 MOTH >
 LETHE <=
 MOTHE >=
 ISE ==
 NOTE !=
+
+
+
+PLUS \+
+MINUS \-
+STAR \*
+DIVISION \/
+
 COMMA ,
 SEMICOLON ;
-PLUS +
-MINUS -
-
-
+ASSIGN =
 
 FOR for
 WHILE while
@@ -39,16 +46,24 @@ RETURN return
 {RB}   {return RB;}
 {LMB}   {return LMB;}
 {RMB}   {return RMB;}
+{LBB}   {return LBB;}
+{RBB}   {return RBB;}
 {LETH}   {return LETH;}
 {MOTH}   {return MOTH;}
 {LETHE}   {return LETHE;}
 {MOTHE}   {return MOTHE;}
 {ISE}   {return ISE;}
 {NOTE}   {return NOTE;}
-{COMMA}   {return COMMA;}
-{SEMICOLON}   {return SEMICOLON;}
+
+
 {PLUS}   {return PLUS;}
 {MINUS}   {return MINUS;}
+{STAR}   {return STAR;}
+{DIVISION}   {return DIVISION;}
+
+{COMMA}   {return COMMA;}
+{SEMICOLON}   {return SEMICOLON;}
+{ASSIGN}   {return ASSIGN;}
 
 {FOR}   {return FOR;}
 {WHILE}   {return WHILE;}
@@ -57,18 +72,5 @@ RETURN return
 {ELSE}   {return ELSE;}
 {RETURN}   {return RETURN;}
 
-
-
-({alphabet}|_)({alphabet}|{number}|_)* {
-	char * temp = strdup("%");
-	strcat(temp, yytext);
-	yylval.str=temp; 
-	return ID;}
-{number}+	{
-  yylval.str=strdup(yytext);
-  return NUM;}
-{number}+\.{number}+ 	{
-  yylval.str=strdup(yytext); 
-  return REAL;}
 
 %%
