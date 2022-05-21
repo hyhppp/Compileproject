@@ -31,6 +31,9 @@ DIVISION \/
 COMMA ,
 SEMICOLON ;
 ASSIGN =
+AND &&
+OR ||
+NOT !
 
 FOR for
 WHILE while
@@ -38,6 +41,13 @@ BREAK break
 IF if
 ELSE else
 RETURN return
+
+INT 0|[1-9]{number}*
+DOUBLE {numbers}\.{numbers}
+CHAR  \'.\'
+STRING \"(\\.)*\"
+BOOL "true"|"false"
+TYPE "int"|"double"|"char"|"string"|"boolean"
 
 
 %%
@@ -64,6 +74,9 @@ RETURN return
 {COMMA}   {return COMMA;}
 {SEMICOLON}   {return SEMICOLON;}
 {ASSIGN}   {return ASSIGN;}
+{AND}   {return AND;}
+{OR}   {return OR;}
+{NOT}   {return NOT;}
 
 {FOR}   {return FOR;}
 {WHILE}   {return WHILE;}
@@ -71,6 +84,14 @@ RETURN return
 {IF}   {return IF;}
 {ELSE}   {return ELSE;}
 {RETURN}   {return RETURN;}
+
+{INT}   {return INT;}
+{DOUBLE}   {return DOUBLE;}
+{CHAR}   {return CHAR;}
+{STRING}   {return STRING;}
+{BOOL}   {return BOOL;}
+{TYPE}   {return TYPE;}
+
 
 
 %%
