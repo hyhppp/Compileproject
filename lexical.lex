@@ -1,6 +1,7 @@
 %option yylineno
 %{
-int yylineno;
+    #include <string.h>
+    extern int mistake;
 %}
 
 
@@ -103,6 +104,11 @@ COMMENT \/\/[^\n]*
 {TAB}   {return TAB;}
 
 {COMMENT}   {}
+
+.   {
+        mistake++;
+        printf("Error Occurs at Line %d: Unknown characters \'%s\'\n", yylineno, yytext);
+    }
 
 
 %%
