@@ -1,6 +1,9 @@
 %option yylineno
 %{
     #include <string.h>
+    #include "ast.h"
+    #include "grammar.hpp"
+    int yycolumn=1;
     extern int mistake;
 %}
 
