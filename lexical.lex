@@ -25,6 +25,8 @@ MOTHE >=
 ISE ==
 NOTE !=
 
+NAME [a-zA-Z_][0-9a-zA-Z_]*
+
 
 
 PLUS \+
@@ -74,6 +76,8 @@ COMMENT \/\/[^\n]*
 {MOTHE}   {yylval.token_tree=new Node(yytext,"MOTHE",0);return MOTHE;}
 {ISE}   {yylval.token_tree=new Node(yytext,"ISE",0);return ISE;}
 {NOTE}   {yylval.token_tree=new Node(yytext,"NOTE",0);return NOTE;}
+
+{NAME}   {yylval.token_tree=new Node(yytext,"NAME",0);return NAME;}
 
 
 {PLUS}   {yylval.token_tree=new Node(yytext,"PLUS",0);return PLUS;}
