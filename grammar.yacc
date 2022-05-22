@@ -51,9 +51,11 @@
 %type <token_tree> Datatype
 %type <token_tree> Define
 %type <token_tree> Definelist
+%type <token_tree> Defineblock
+%type <token_tree> Variable
 %type <token_tree> Function
-%type <token_tree> 
-%type <token_tree> 
+%type <token_tree> Variableline
+%type <token_tree> Singledef
 %type <token_tree> 
 %type <token_tree> 
 %type <token_tree> 
@@ -75,16 +77,59 @@ Define:
 	Datatype Definelist SEMICOLON {
         $$ = new Node("", "Define", 3, $1, $2, $3);
 	}
-    | Datatype Function Scope {
+    	| Datatype Function Scope {
         $$ = new Node("", "Define", 3, $1, $2, $3);
 	};
 Definelist: 
-	Var {
+	Variable {
 		$$ = new Node("", "Definelist", 1, $1);
 	}
-    | Var COMMA DecList {
+    	| Variable COMMA Definelist {
 		$$ = new Node("", "Definelist", 3, $1, $2, $3);
 	};
+Defineblock:
+	Define Defineblock {
+		$$ = new Node("", "Defineblock", 2, $1, $2);
+	}
+    	| %empty {
+		$$ = nullptr;
+	}；
+
+
+Variable:  
+	NAME {
+        $$ = new Node("", "Variable", 1, $1);
+	}
+    	| NAME LMB INT RMB {
+        $$ = new Node("", "Variable", 4, $1, $2, $3, $4);
+	}
+    	| NAME LMB RMB {
+        $$ = new Node("", "Variable", 3, $1, $2, $3);
+	};
+
+Function:
+	NAME LB Variableline RB {
+        $$ = new Node("", "Function", 4, $1, $2, $3, $4);
+	}
+    	| NAME LB RB {
+        $$ = new Node("", "Function", 3, $1, $2, $3);
+	};
+	
+Variableline:
+	Singledef COMMA Variableline {
+        $$ = new Node("", "Variableline", 3, $1, $2, $3);
+	}
+    	| Variableline {
+        $$ = new Node("", "Variableline", 1, $1);
+	};
+	
+Singledef:
+	Datatype Variable {
+        $$ = new Node("", "Singledef", 2, $1, $2);
+	};
+	
+
+
 
 
 
