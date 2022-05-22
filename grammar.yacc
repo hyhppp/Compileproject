@@ -127,6 +127,124 @@ Singledef:
 	Datatype Variable {
         $$ = new Node("", "Singledef", 2, $1, $2);
 	};
+
+Op:  
+	Op ASSIGN Op {
+		$$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($3->getValueType());
+	}
+    	| Op AND Op {
+		$$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+	}
+    	| Op OR Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op LETH Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op MOTH Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op LETHE Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op MOTHE Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op ISE Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op NOTE Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op PLUS Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op MINUS Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op STAR Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| Op DIVISION Op {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| LB Op RB {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($2->getValueType());
+    	}
+    	| MINUS Op {
+        $$ = new Node("", "Op", 2, $1, $2);
+        $$->setValueType($2->getValueType());
+    	}
+    	| NOT Op {
+        $$ = new Node("", "Op", 2, $1, $2);
+        $$->setValueType(TYPE_BOOL);
+    	}
+    	| NAME LB Opblock RB {
+        $$ = new Node("", "Op", 4, $1, $2, $3, $4);
+        $$->setValueType($1->getValueType());
+    	}
+    	| NAME LB RB {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType());
+    	}
+    	| NAME LMB Op RMB {
+        $$ = new Node("", "Op", 4, $1, $2, $3, $4);
+        $$->setValueType($1->getValueType() - ARRAY);
+    	}
+    	| NAME LMB RMB {
+        $$ = new Node("", "Op", 3, $1, $2, $3);
+        $$->setValueType($1->getValueType() + ARRAY);
+    	}
+    	| NAME {
+        $$ = new Node("", "Op", 1, $1);
+        $$->setValueType($1->getValueType());
+    	}
+    	| INT {
+        $$ = new Node("", "Op", 1, $1);
+        $$->setValueType(TYPE_INT);
+    	}
+    	| DOUBLE {
+        $$ = new Node("", "Op", 1, $1);
+        $$->setValueType(TYPE_FLOAT);
+    	}
+    	| BOOL {
+        $$ = new Node("", "Op", 1, $1);
+        $$->setValueType(TYPE_BOOL);
+    	}
+    	| CHAR {
+        $$ = new Node("", "Op", 1, $1);
+        $$->setValueType(TYPE_CHAR);
+    	}
+    	| STRING {
+        $$ = new Node("", "Op", 1, $1);
+        $$->setValueType(TYPE_CHAR_ARRAY);
+    	};
+
+
+
+Args:  
+    	Opblock COMMA Opblock {
+        $$ = new Node("", "Opblock", 3, $1, $2, $3);
+    	}
+    	| Op {
+        $$ = new Node("", "Opblock", 1, $1);
+    	};
+
+
 	
 
 
