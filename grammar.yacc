@@ -3,6 +3,7 @@
     #include "ast.h"
     #include "type.h"
     int yylex(void);
+    extern Node *ROOT;
     int mistake = 0;
 %}
 
@@ -270,6 +271,19 @@ Declaration:
 	$$ = new Node("", "Declaration", 7, $1, $2, $3, $4, $5, $6, $7);
 	}
 	
+	
+Declarationline:
+	%empty {
+	$$ = nullptr;
+	}
+    	| Declaration Declarationline {
+	$$ = new Node("", "Declarationline", 2, $1, $2);
+	};
+	
+Scope:  
+	LBB Defineformallist Declarationline RBB {	
+	$$ = new Node("", "Scope", 4, $1, $2, $3, $4);
+	}
 
 Defineformal:  
 	Datatype Variablelist SEMICOLON {
