@@ -6,6 +6,9 @@
     int mistake = 0;
 %}
 
+%nonassoc LELSE
+%nonassoc ELSE
+
 %union
 {
     struct Node* token_tree;
@@ -66,8 +69,8 @@
 %%
 Allprogram:
 	Definelist {
-		$$ = new Node("", "Allprogram", 1, $1);
-		ROOT = $$;
+	$$ = new Node("", "Allprogram", 1, $1);
+	ROOT = $$;
 	};
 Datatype:
 	TYPE {
@@ -82,17 +85,17 @@ Define:
 	};
 Definelist: 
 	Variable {
-		$$ = new Node("", "Definelist", 1, $1);
+	$$ = new Node("", "Definelist", 1, $1);
 	}
     	| Variable COMMA Definelist {
-		$$ = new Node("", "Definelist", 3, $1, $2, $3);
+	$$ = new Node("", "Definelist", 3, $1, $2, $3);
 	};
 Defineblock:
 	Define Defineblock {
-		$$ = new Node("", "Defineblock", 2, $1, $2);
+	$$ = new Node("", "Defineblock", 2, $1, $2);
 	}
     	| %empty {
-		$$ = nullptr;
+	$$ = nullptr;
 	}；
 
 
@@ -236,17 +239,58 @@ Op:
 
 
 
-Args:  
+Opblock:  
     	Opblock COMMA Opblock {
         $$ = new Node("", "Opblock", 3, $1, $2, $3);
     	}
     	| Op {
         $$ = new Node("", "Opblock", 1, $1);
     	};
-
-
+	
+Declaration:
+	Op SEMICOLON {
+	$$ = new Node("", "Declaration", 2, $1, $2);
+	}
+    	| Scope {
+	$$ = new Node("", "Declaration", 1, $1);
+	}
+    	| RETURN Op SEMICOLON {
+	$$ = new Node("", "Declaration", 3, $1, $2, $3);
+	}
+    	| RETURN SEMICOLON {
+        $$ = new Node("", "Declaration", 2, $1, $2);
+    	}
+    	| BREAK SEMICOLON {
+        $$ = new Node("", "Declaration", 2, $1, $2);
+    	}
+    	| IF LB Op RB Declaration %prec LELSE {
+	$$ = new Node("", "Declaration", 5, $1, $2, $3, $4, $5);
+	}
+    	| IF LB Op RB Declaration ELSE Declaration {
+	$$ = new Node("", "Declaration", 7, $1, $2, $3, $4, $5, $6, $7);
+	}
 	
 
+Defineformal:  
+	Datatype Variablelist SEMICOLON {
+	$$ = new Node("", "Defineformal", 3, $1, $2, $3);
+    	};
+
+Defineformallist:  
+	%empty {
+	$$ = nullptr;
+	}
+    	| Op Defineformallist {
+	$$ = new Node("", "Defineformallist", 2, $1, $2);
+	};
+
+Variablelist:  
+	Variable {
+	$$ = new Node("", "Variablelist", 1, $1);
+	}
+    	| Variable COMMA Variablelist {
+	$$ = new Node("", "Variablelist", 3, $1, $2, $3);
+	};
 
 
 
