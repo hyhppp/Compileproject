@@ -28,8 +28,7 @@
 #include <llvm/Support/raw_ostream.h>
 #include <llvm/Support/DynamicLibrary.h>
 #include <llvm/Target/TargetMachine.h>
-#include <json/json.h>
-
+#include "ast.h"
 #include "type.h"
 
 using namespace std;
@@ -37,57 +36,32 @@ using namespace std;
 static llvm::LLVMContext context;
 static llvm::IRBuilder<> builder(context);
 
+llvm::Instruction::CastOps getCastInst(llvm::Type *src, llvm::Type *dst);
+llvm::Value *typeCast(llvm::Value *src, llvm::Type *dst);
+
+llvm::Value *irBuild(Node *node);
+llvm::Value *irBuildExp(Node *node);
+llvm::Value *irBuildFun(Node *node);
+llvm::Value *irBuildVar(Node *node);
+llvm::Value *irBuildDeclaration(Node *node);
+llvm::Value *irBuildWhile(Node *node);
+llvm::Value *irBuildIf(Node *node);
+llvm::Value *irBuildReturn(Node *node);
+llvm::Value *irBuildScope(Node *node);
+llvm::Value *irBuildRELOP(Node *node);
+llvm::Value *irBuildPrint(Node *node);
+llvm::Value *irBuildPrintf(Node *node);
+llvm::Value *irBuildScan(Node *node);
+llvm::Value *irBuildAddr(Node *node);
+
+llvm::Type *getLlvmType(int type, int arraySize);
+vector<pair<string, int>> *getNameList(Node *node, int type);
+vector<llvm::Value *> *getArgs(Node *cur);
+vector<llvm::Value *> *getPrintArgs(Node *cur);
+vector<llvm::Value *> *getArgsAddr(Node *cur);
+vector<pair<string, llvm::Type *>> *getParam(Node *cur);
+
 llvm::AllocaInst *CreateEntryBlockAlloca(llvm::Function *TheFunction, llvm::StringRef VarName, llvm::Type *type);
-
-class Node
-{
-public:
-    // Value or name of node, if type of node is int, the value of nodeName is the value of the integer, float, bool, char are similar
-    // if type is var, the value is the name of this variable
-    string *nodeName;
-    // The type of the node
-    string *nodeType;
-    // The type of exp, var or const
-    int valueType;
-    // The number of child of the node
-    int childNum;
-    // Child nodes of this node
-    Node **childNode;
-    // The number of rows of the node in the file
-    int lineNo;
-
-    llvm::Value *irBuild();
-    llvm::Value *irBuildExp();
-    llvm::Value *irBuildFun();
-    llvm::Value *irBuildVar();
-    llvm::Value *irBuildStmt();
-    llvm::Value *irBuildWhile();
-    llvm::Value *irBuildIf();
-    llvm::Value *irBuildReturn();
-    llvm::Value *irBuildCompSt();
-    llvm::Value *irBuildRELOP();
-    llvm::Value *irBuildPrint();
-    llvm::Value *irBuildPrintf();
-    llvm::Value *irBuildScan();
-    llvm::Value *irBuildAddr();
-    llvm::Instruction::CastOps getCastInst(llvm::Type *src, llvm::Type *dst);
-    llvm::Value *typeCast(llvm::Value *src, llvm::Type *dst);
-    int getValueType();
-    int getValueType(Node *node);
-    void setValueType(int type);
-    llvm::Type *getLlvmType(int type, int arraySize);
-    vector<pair<string, int>> *getNameList(int type);
-    vector<llvm::Value *> *getArgs();
-    vector<llvm::Value *> *getPrintArgs();
-    vector<llvm::Value *> *getArgsAddr();
-    vector<pair<string, llvm::Type *>> *getParam();
-
-    Node(char *nodeName, string nodeType, int lineNo);
-    Node(string nodeName, string nodeType, int childNum, ...);
-    ~Node();
-
-    Json::Value jsonGen();
-};
 
 class codeGen
 {
@@ -96,14 +70,17 @@ public:
     llvm::Function *printf, *scanf;
     stack<llvm::Function *> funStack;
 
-    llvm::Function *getCurFunction();
-    void pushFunction(llvm::Function *func);
-    void popFunction();
     llvm::Value *findValue(const std::string &name);
+    llvm::Function *getCurFunction();
     llvm::Function *createPrintf();
     llvm::Function *createScanf();
+
+    void pushFunction(llvm::Function *func);
+    void popFunction();
+
     void generate(Node *root);
-    codeGen(/* args */);
+
+    codeGen();
     ~codeGen();
 };
 

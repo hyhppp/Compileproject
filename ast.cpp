@@ -1,10 +1,85 @@
 #include "ast.h"
+#include "code_gen.h"
+#include <cstdarg>
+
+Node *ROOT;
+extern stack<llvm::BasicBlock *> GlobalAfterBB;
+extern codeGen *generator;
+
+Node::Node(char *nodeName, string nodeType)
+{
+    this->nodeName = new string(nodeName);
+    this->nodeType = new string(nodeType);
+    this->childNum = 0;
+}
+
+Node::Node(string nodeName, string nodeType, int childNum, ...)
+{
+    this->nodeName = new string(nodeName);
+    this->nodeType = new string(nodeType);
+
+    this->childNum = childNum;
+    this->childNode = new Node *[childNum];
+
+    va_list l;
+    va_start(l, childNum);
+    for (int i = 0; i < childNum; i++)
+    {
+        Node *node;
+        node = va_arg(l, Node *);
+        this->childNode[i] = node;
+    }
+    va_end(l);
+}
+
+void Node::setValueType(int type)
+{
+    this->valueType = type;
+}
+
+int Node::getValueType()
+{
+    return getValueType(this);
+}
+
+int Node::getValueType(Node *node)
+{
+    if (node->nodeType->compare("Datatype") == 0)
+    {
+        // Datatype --> Type
+        if (node->childNode[0]->nodeName->compare("int") == 0)
+        {
+            return TYPE_INT;
+        }
+        else if (node->childNode[0]->nodeName->compare("float") == 0)
+        {
+            return TYPE_FLOAT;
+        }
+        else if (node->childNode[0]->nodeName->compare("char") == 0)
+        {
+            return TYPE_CHAR;
+        }
+        else if (node->childNode[0]->nodeName->compare("boolean") == 0)
+        {
+            return TYPE_BOOL;
+        }
+        else
+        {
+        }
+    }
+    else if (node->nodeType->compare("Op") == 0)
+    {
+        return node->valueType;
+    }
+    // Error
+    return -1;
+}
 
 Json::Value Node::jsonGen()
 {
     Json::Value root;
     string padding = "";
-    if (this->nodeType->compare("Specifier") == 0 || this->nodeType->compare("Exp") == 0)
+    if (this->nodeType->compare("Datatype") == 0 || this->nodeType->compare("Op") == 0)
     {
         int valueType = this->getValueType();
         switch (valueType)
