@@ -26,9 +26,9 @@ using namespace std;
 class Node
 {
 public:
-    // Value or name of node, if type of node is int, the value of nodeName is the value of the integer, float, bool, char are similar
+    // Value or name of node, if type of node is int, the value of nodeText is the value of the integer, float, bool, char are similar
     // if type is var, the value is the name of this variable
-    string *nodeName;
+    string *nodeText;
     // The type of the node
     string *nodeType;
     // The type of exp, var or const
@@ -44,8 +44,8 @@ public:
 
     Json::Value jsonGen();
 
-    Node(char *nodeName, string nodeType);
-    Node(string nodeName, string nodeType, int childNum, ...);
+    Node(char *nodeText, string nodeType);
+    Node(string nodeText, string nodeType, int childNum, ...);
 
     ~Node();
 };

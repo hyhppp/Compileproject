@@ -6,16 +6,16 @@ Node *ROOT;
 extern stack<llvm::BasicBlock *> GlobalAfterBB;
 extern codeGen *generator;
 
-Node::Node(char *nodeName, string nodeType)
+Node::Node(char *nodeText, string nodeType)
 {
-    this->nodeName = new string(nodeName);
+    this->nodeText = new string(nodeText);
     this->nodeType = new string(nodeType);
     this->childNum = 0;
 }
 
-Node::Node(string nodeName, string nodeType, int childNum, ...)
+Node::Node(string nodeText, string nodeType, int childNum, ...)
 {
-    this->nodeName = new string(nodeName);
+    this->nodeText = new string(nodeText);
     this->nodeType = new string(nodeType);
 
     this->childNum = childNum;
@@ -46,25 +46,21 @@ int Node::getValueType(Node *node)
 {
     if (node->nodeType->compare("Datatype") == 0)
     {
-        // Datatype --> Type
-        if (node->childNode[0]->nodeName->compare("int") == 0)
+        if (node->childNode[0]->nodeText->compare("int") == 0)
         {
             return TYPE_INT;
         }
-        else if (node->childNode[0]->nodeName->compare("float") == 0)
+        else if (node->childNode[0]->nodeText->compare("float") == 0)
         {
             return TYPE_FLOAT;
         }
-        else if (node->childNode[0]->nodeName->compare("char") == 0)
+        else if (node->childNode[0]->nodeText->compare("char") == 0)
         {
             return TYPE_CHAR;
         }
-        else if (node->childNode[0]->nodeName->compare("boolean") == 0)
+        else if (node->childNode[0]->nodeText->compare("boolean") == 0)
         {
             return TYPE_BOOL;
-        }
-        else
-        {
         }
     }
     else if (node->nodeType->compare("Op") == 0)

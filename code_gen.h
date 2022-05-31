@@ -61,8 +61,6 @@ vector<llvm::Value *> *getPrintArgs(Node *cur);
 vector<llvm::Value *> *getArgsAddr(Node *cur);
 vector<pair<string, llvm::Type *>> *getParam(Node *cur);
 
-llvm::AllocaInst *CreateEntryBlockAlloca(llvm::Function *TheFunction, llvm::StringRef VarName, llvm::Type *type);
-
 class codeGen
 {
 public:
