@@ -37,32 +37,32 @@ llvm::Value *typeCast(llvm::Value *src, llvm::Type *dst)
     return builder.CreateCast(op, src, dst, "tmptypecast");
 }
 
-llvm::Value *irBuild(Node *node)
+llvm::Value *IR(Node *node)
 {
     if (node->nodeType->compare("Define") == 0)
     {
         if (node->childNode[1]->nodeType->compare("Defineblock") == 0)
         {
-            return irBuildVar(node);
+            return IRVar(node);
         }
         else
         {
-            return irBuildFun(node);
+            return IRFun(node);
         }
     }
     else if (node->nodeType->compare("Def") == 0)
     {
-        return irBuildVar(node);
+        return IRVar(node);
     }
     for (int i = 0; i < node->childNum; i++)
     {
         if (node->childNode[i] != nullptr)
-            irBuild(node->childNode[i]);
+            IR(node->childNode[i]);
     }
     return NULL;
 }
 
-llvm::Value *irBuildExp(Node *node)
+llvm::Value *IRExp(Node *node)
 {
     if (node->childNode[0]->nodeType->compare("INT") == 0)
     {
@@ -190,15 +190,16 @@ llvm::Value *irBuildExp(Node *node)
             {
                 if (node->childNode[0]->nodeText->compare("print") == 0)
                 {
-                    return irBuildPrint(node);
+                    return IRPrint(node);
                 }
                 if (node->childNode[0]->nodeText->compare("printf") == 0)
                 {
-                    return irBuildPrintf(node);
+                    vector<llvm::Value *> *args = getPrintArgs(node->childNode[2]);
+                    return builder.CreateCall(generator->printf, *args, "printf");
                 }
                 if (node->childNode[0]->nodeText->compare("scan") == 0)
                 {
-                    return irBuildScan(node);
+                    return IRScan(node);
                 }
                 if (node->childNode[0]->nodeText->compare("scanf") == 0)
                 {
@@ -215,7 +216,7 @@ llvm::Value *irBuildExp(Node *node)
             else
             {
                 llvm::Value *arrayValue = generator->findValue(*node->childNode[0]->nodeText);
-                llvm::Value *indexValue = irBuildExp(node->childNode[2]);
+                llvm::Value *indexValue = IRExp(node->childNode[2]);
                 if (indexValue->getType() != llvm::Type::getInt32Ty(context))
                 {
                     indexValue = typeCast(indexValue, llvm::Type::getInt32Ty(context));
@@ -232,15 +233,15 @@ llvm::Value *irBuildExp(Node *node)
     }
     else if (node->childNode[0]->nodeType->compare("LP") == 0)
     {
-        return irBuildExp(node->childNode[1]);
+        return IRExp(node->childNode[1]);
     }
     else if (node->childNode[0]->nodeType->compare("MINUS") == 0)
     {
-        return builder.CreateNeg(irBuildExp(node->childNode[1]), "tmpNeg");
+        return builder.CreateNeg(IRExp(node->childNode[1]), "tmpNeg");
     }
     else if (node->childNode[0]->nodeType->compare("NOT") == 0)
     {
-        llvm::Value *tmp = irBuildExp(node->childNode[1]);
+        llvm::Value *tmp = IRExp(node->childNode[1]);
         if (tmp->getType() != llvm::Type::getInt1Ty(context))
         {
             throw logic_error("cannot use types other than bool in ! Exp");
@@ -252,8 +253,8 @@ llvm::Value *irBuildExp(Node *node)
     {
         if (node->childNode[1]->nodeType->compare("ASSIGN") == 0)
         {
-            llvm::Value *left = irBuildAddr(node->childNode[0]);
-            llvm::Value *right = irBuildExp(node->childNode[2]);
+            llvm::Value *left = IRAddr(node->childNode[0]);
+            llvm::Value *right = IRExp(node->childNode[2]);
             if (right->getType() != left->getType()->getPointerElementType())
             {
                 right = typeCast(right, left->getType()->getPointerElementType());
@@ -262,12 +263,12 @@ llvm::Value *irBuildExp(Node *node)
         }
         else if (node->childNode[1]->nodeType->compare("LETH") == 0 || node->childNode[1]->nodeType->compare("MOTH") == 0 || node->childNode[1]->nodeType->compare("LETHE") == 0 || node->childNode[1]->nodeType->compare("MOTHE") == 0 || node->childNode[1]->nodeType->compare("ISE") == 0 || node->childNode[1]->nodeType->compare("NOTE") == 0)
         {
-            return irBuildRELOP(node);
+            return IRCmp(node);
         }
         else
         {
-            llvm::Value *left = irBuildExp(node->childNode[0]);
-            llvm::Value *right = irBuildExp(node->childNode[2]);
+            llvm::Value *left = IRExp(node->childNode[0]);
+            llvm::Value *right = IRExp(node->childNode[2]);
             if (node->childNode[1]->nodeType->compare("AND") == 0)
             {
                 if (left->getType() != llvm::Type::getInt1Ty(context) || right->getType() != llvm::Type::getInt1Ty(context))
@@ -338,7 +339,7 @@ llvm::Value *irBuildExp(Node *node)
 }
 
 // Datatype FunDec Scope
-llvm::Value *irBuildFun(Node *node)
+llvm::Value *IRFun(Node *node)
 {
     vector<pair<string, llvm::Type *>> *params = nullptr;
     vector<llvm::Type *> argTypes;
@@ -371,7 +372,7 @@ llvm::Value *irBuildFun(Node *node)
     }
 
     // Sub routine
-    irBuildScope(node->childNode[2]);
+    IRScope(node->childNode[2]);
 
     // Pop back
     generator->popFunction();
@@ -380,7 +381,7 @@ llvm::Value *irBuildFun(Node *node)
 
 // Define --> Datatype Defineblock SEMICOLON
 // Def --> Datatype Variablelist SEMICOLON
-llvm::Value *irBuildVar(Node *node)
+llvm::Value *IRVar(Node *node)
 {
     int type = node->childNode[0]->getValueType();
     vector<pair<string, int>> *nameList = getNameList(node->childNode[1], type);
@@ -435,23 +436,23 @@ llvm::Value *irBuildVar(Node *node)
 }
 
 // Declaration
-llvm::Value *irBuildDeclaration(Node *node)
+llvm::Value *IRDeclaration(Node *node)
 {
     if (node->childNode[0]->nodeType->compare("Op") == 0)
     {
-        return irBuildExp(node->childNode[0]);
+        return IRExp(node->childNode[0]);
     }
     else if (node->childNode[0]->nodeType->compare("IF") == 0)
     {
-        return irBuildIf(node);
+        return IRIf(node);
     }
     else if (node->childNode[0]->nodeType->compare("WHILE") == 0)
     {
-        return irBuildWhile(node);
+        return IRWhile(node);
     }
     else if (node->childNode[0]->nodeType->compare("RETURN") == 0)
     {
-        return irBuildReturn(node);
+        return IRReturn(node);
     }
     else if (node->childNode[0]->nodeType->compare("BREAK") == 0)
     {
@@ -459,13 +460,13 @@ llvm::Value *irBuildDeclaration(Node *node)
     }
     else if (node->childNode[0]->nodeType->compare("Scope") == 0)
     {
-        return irBuildScope(node->childNode[0]);
+        return IRScope(node->childNode[0]);
     }
     return NULL;
 }
 
 // WHILE LP Exp RP Declaration
-llvm::Value *irBuildWhile(Node *node)
+llvm::Value *IRWhile(Node *node)
 {
     llvm::Function *TheFunction = generator->getCurFunction();
     llvm::BasicBlock *condBB = llvm::BasicBlock::Create(context, "cond", TheFunction);
@@ -478,14 +479,14 @@ llvm::Value *irBuildWhile(Node *node)
     builder.CreateBr(condBB);
     builder.SetInsertPoint(condBB);
     // WHILE LP Exp RP Declaration
-    llvm::Value *condValue = irBuildExp(node->childNode[2]);
+    llvm::Value *condValue = IRExp(node->childNode[2]);
     condValue = builder.CreateICmpNE(condValue, llvm::ConstantInt::get(llvm::Type::getInt1Ty(context), 0, true), "whileCond");
     auto branch = builder.CreateCondBr(condValue, loopBB, afterBB);
     condBB = builder.GetInsertBlock();
 
     // Loop
     builder.SetInsertPoint(loopBB);
-    irBuildDeclaration(node->childNode[4]);
+    IRDeclaration(node->childNode[4]);
     builder.CreateBr(condBB);
 
     // After
@@ -496,9 +497,9 @@ llvm::Value *irBuildWhile(Node *node)
 
 // IF LP Exp RP Declaration %prec LOWER_THAN_ELSE
 // IF LP Exp RP Declaration ELSE Declaration
-llvm::Value *irBuildIf(Node *node)
+llvm::Value *IRIf(Node *node)
 {
-    llvm::Value *condValue = irBuildExp(node->childNode[2]), *thenValue = nullptr, *elseValue = nullptr;
+    llvm::Value *condValue = IRExp(node->childNode[2]), *thenValue = nullptr, *elseValue = nullptr;
     condValue = builder.CreateICmpNE(condValue, llvm::ConstantInt::get(llvm::Type::getInt1Ty(context), 0, true), "ifCond");
 
     llvm::Function *TheFunction = generator->getCurFunction();
@@ -509,7 +510,7 @@ llvm::Value *irBuildIf(Node *node)
     // Then
     auto branch = builder.CreateCondBr(condValue, thenBB, elseBB);
     builder.SetInsertPoint(thenBB);
-    thenValue = irBuildDeclaration(node->childNode[4]);
+    thenValue = IRDeclaration(node->childNode[4]);
     builder.CreateBr(mergeBB);
     thenBB = builder.GetInsertBlock();
 
@@ -517,7 +518,7 @@ llvm::Value *irBuildIf(Node *node)
     builder.SetInsertPoint(elseBB);
     if (node->childNum == 7)
     {
-        elseValue = irBuildDeclaration(node->childNode[6]);
+        elseValue = IRDeclaration(node->childNode[6]);
     }
     builder.CreateBr(mergeBB);
     elseBB = builder.GetInsertBlock();
@@ -528,11 +529,11 @@ llvm::Value *irBuildIf(Node *node)
 
 // RETURN Exp SEMICOLON
 // RETURN SEMICOLON
-llvm::Value *irBuildReturn(Node *node)
+llvm::Value *IRReturn(Node *node)
 {
     if (node->childNum == 3)
     {
-        auto returnInst = irBuildExp(node->childNode[1]);
+        auto returnInst = IRExp(node->childNode[1]);
         return builder.CreateRet(returnInst);
     }
     return builder.CreateRetVoid();
@@ -542,7 +543,7 @@ llvm::Value *irBuildReturn(Node *node)
 // Defineformallist --> Def Defineformallist
 // Def --> Datatype Variablelist SEMICOLON
 // Declarationline --> Declaration Declarationline
-llvm::Value *irBuildScope(Node *node)
+llvm::Value *IRScope(Node *node)
 {
     Node *defNodes = node->childNode[1];
     Node *DeclarationNodes = node->childNode[2];
@@ -550,7 +551,7 @@ llvm::Value *irBuildScope(Node *node)
     {
         if (defNodes != nullptr && defNodes->childNum == 2)
         {
-            irBuildVar(defNodes->childNode[0]);
+            IRVar(defNodes->childNode[0]);
             defNodes = defNodes->childNode[1];
         }
         else
@@ -562,7 +563,7 @@ llvm::Value *irBuildScope(Node *node)
     {
         if (DeclarationNodes != nullptr && DeclarationNodes->childNum == 2)
         {
-            irBuildDeclaration(DeclarationNodes->childNode[0]);
+            IRDeclaration(DeclarationNodes->childNode[0]);
             DeclarationNodes = DeclarationNodes->childNode[1];
         }
         else
@@ -574,10 +575,10 @@ llvm::Value *irBuildScope(Node *node)
 }
 
 // Exp RELOP Exp
-llvm::Value *irBuildRELOP(Node *node)
+llvm::Value *IRCmp(Node *node)
 {
-    llvm::Value *left = irBuildExp(node->childNode[0]);
-    llvm::Value *right = irBuildExp(node->childNode[2]);
+    llvm::Value *left = IRExp(node->childNode[0]);
+    llvm::Value *right = IRExp(node->childNode[2]);
     if (left->getType() != right->getType())
     {
         if (left->getType() == llvm::Type::getFloatTy(context))
@@ -635,7 +636,7 @@ llvm::Value *irBuildRELOP(Node *node)
 }
 
 // Exp --> NAME LP Args RP
-llvm::Value *irBuildPrint(Node *node)
+llvm::Value *IRPrint(Node *node)
 {
     string formatStr = "";
     vector<llvm::Value *> *args = getPrintArgs(node->childNode[2]);
@@ -684,15 +685,9 @@ llvm::Value *irBuildPrint(Node *node)
     return builder.CreateCall(generator->printf, *args, "printf");
 }
 
-llvm::Value *irBuildPrintf(Node *node)
-{
-    vector<llvm::Value *> *args = getPrintArgs(node->childNode[2]);
-    return builder.CreateCall(generator->printf, *args, "printf");
-}
-
 // Args --> Exp COMMA Args
 // Args --> Exp
-llvm::Value *irBuildScan(Node *node)
+llvm::Value *IRScan(Node *node)
 {
     string formatStr = "";
     vector<llvm::Value *> *args = getArgsAddr(node->childNode[2]);
@@ -731,7 +726,7 @@ llvm::Value *irBuildScan(Node *node)
 // Exp --> NAME
 // Exp --> NAME[Exp]
 // Exp --> NAME[]
-llvm::Value *irBuildAddr(Node *node)
+llvm::Value *IRAddr(Node *node)
 {
     if (node->childNum == 1)
     {
@@ -740,7 +735,7 @@ llvm::Value *irBuildAddr(Node *node)
     else if (node->childNum == 4)
     {
         llvm::Value *arrayValue = generator->findValue(*node->childNode[0]->nodeText);
-        llvm::Value *indexValue = irBuildExp(node->childNode[2]);
+        llvm::Value *indexValue = IRExp(node->childNode[2]);
         vector<llvm::Value *> indexList;
         indexList.push_back(builder.getInt32(0));
         indexList.push_back(indexValue);
@@ -877,7 +872,7 @@ vector<llvm::Value *> *getArgs(Node *cur)
     Node *node = cur;
     while (true)
     {
-        llvm::Value *tmp = irBuildExp(node->childNode[0]);
+        llvm::Value *tmp = IRExp(node->childNode[0]);
         if (node->childNum == 1)
         {
             args->push_back(tmp);
@@ -899,7 +894,7 @@ vector<llvm::Value *> *getPrintArgs(Node *cur)
     Node *node = cur;
     while (true)
     {
-        llvm::Value *tmp = irBuildExp(node->childNode[0]);
+        llvm::Value *tmp = IRExp(node->childNode[0]);
         if (tmp->getType() == llvm::Type::getFloatTy(context))
             tmp = builder.CreateFPExt(tmp, llvm::Type::getDoubleTy(context), "tmpdouble");
         if (node->childNum == 1)
@@ -924,12 +919,12 @@ vector<llvm::Value *> *getArgsAddr(Node *cur)
     {
         if (node->childNum == 1)
         {
-            args->push_back(irBuildAddr(node->childNode[0]));
+            args->push_back(IRAddr(node->childNode[0]));
             break;
         }
         else
         {
-            args->push_back(irBuildAddr(node->childNode[0]));
+            args->push_back(IRAddr(node->childNode[0]));
             node = node->childNode[2];
         }
     }
@@ -1029,7 +1024,7 @@ llvm::Function *codeGen::createScanf()
 
 void codeGen::generate(Node *root)
 {
-    irBuild(root);
+    IR(root);
     // this->module->print(llvm::outs(), nullptr);
     std::error_code EC;
     llvm::raw_fd_ostream Out("test.ll", EC);
