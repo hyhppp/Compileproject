@@ -203,7 +203,9 @@ llvm::Value *IRExp(Node *node)
                 }
                 if (node->childNode[0]->nodeText->compare("scanf") == 0)
                 {
-                    throw logic_error("[ERROR] Funtion not defined: " + *node->childNode[0]->nodeText);
+                    vector<llvm::Value *> *args = getPrintArgs(node->childNode[2]);
+                    return builder.CreateCall(generator->scanf, *args, "scanf");
+                    // throw logic_error("[ERROR] Funtion not defined: " + *node->childNode[0]->nodeText);
                 }
                 llvm::Function *fun = generator->module->getFunction(*node->childNode[0]->nodeText);
                 if (fun == nullptr)
