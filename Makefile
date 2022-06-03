@@ -11,8 +11,8 @@ LD_FLAGS = -lpthread -ldl -lz -lncurses -rdynamic -L/usr/local/lib -ljsoncpp
 .PHONY: build clean test
 
 build:
-	flex -o lexical.cpp lexical.l
-	bison -d -o grammar.cpp grammar.y
+	flex -o lexical.cpp lexical.lex
+	bison -d -o grammar.cpp grammar.yacc
 	$(CC) -g $(LLVM_INCLUDE) $(LLVM_LIBS) $(LD_FLAGS) -lLLVM ./*.cpp -o parse
 
 test:
