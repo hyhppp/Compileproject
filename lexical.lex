@@ -1,3 +1,4 @@
+
 %option yylineno
 %{
     #include <string.h>
@@ -130,3 +131,4 @@ COMMENTLINE \/\/[^\n]*
 int yywrap(void) {
     return 1;
 }
+
