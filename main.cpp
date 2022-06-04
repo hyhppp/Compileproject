@@ -12,14 +12,12 @@ int main() {
     yyparse();
     auto root = ROOT->jsonGen();
 
-    string jsonFile = "../visualization/ast_tree.json";
+    string jsonFile = "./Ast_Tree_Visual/ast_tree.json";
     std::ofstream astJson(jsonFile);
     if(astJson.is_open()){
         astJson << root;
         astJson.close();
-        //cout << "json write to " << jsonFile << endl;
     }
-
 
     llvm::InitializeNativeTarget();
     llvm::InitializeNativeTargetAsmPrinter();
